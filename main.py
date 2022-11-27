@@ -25,6 +25,15 @@ def stripComments(bmFile):
         noComments += line
     return noComments + '\n)'
 
+def count_size(Stmts) :
+    l = 0
+    for i in range(len(Stmts)):
+        if type(Stmts[i]) == list:
+            l = l + count_size(Stmts[i])
+        else :
+            l = l + 1
+    return l
+
 
 if __name__ == '__main__':
     benchmarkFile = open(sys.argv[1])
@@ -54,10 +63,12 @@ if __name__ == '__main__':
             Productions[StartSym].append(NTName)
         Type[NTName] = NTType
         Productions[NTName] = NonTerm[2]
+    print(Productions)
     Count = 0
+    TE_set = set()
+    Ans  = ""
     while(len(BfsQueue)!=0):
         Curr = BfsQueue.pop(0)
-        #print("extend", Curr)
         TryExtend = Extend(Curr,Productions)
         if(len(TryExtend)==0): # Nothing to
             #print(FuncDefine)
@@ -84,9 +95,10 @@ if __name__ == '__main__':
         #print(TryExtend)
         #raw_input()
         #BfsQueue+=TryExtend
-        TE_set = set()
         for TE in TryExtend:
             TE_str = str(TE)
+            if count_size(TE) > 7 :
+                continue
             if not TE_str in TE_set:
                 BfsQueue.append(TE)
                 TE_set.add(TE_str)
