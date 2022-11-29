@@ -2,6 +2,7 @@ import sys
 import sexp
 import pprint
 import translator
+import bottomup
 
 def Extend(Stmts,Productions):
     ret = []
@@ -63,52 +64,56 @@ if __name__ == '__main__':
         Type[NTName] = NTType
         Productions[NTName] = NonTerm[2]
     # print(Productions)
-    Count = 0
-    Ans  = ""
-    for i in range(20) :
-        flag = 0
-        TE_set = set()
-        BfsQueue = [[StartSym]] #Top-down
-        while(len(BfsQueue)!=0):
-            Curr = BfsQueue.pop(0)
-            TryExtend = Extend(Curr,Productions)
-            if(len(TryExtend)==0): # Nothing to
-                #print(FuncDefine)
-                # print("find", Curr)
-                FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True) # use Force Bracket = True on function definition. MAGIC CODE. DO NOT MODIFY THE ARGUMENT ForceBracket = True.
-                CurrStr = translator.toString(Curr)
-                #SynFunResult = FuncDefine+Curr
-                #Str = translator.toString(SynFunResult)
-                Str = FuncDefineStr[:-1]+' '+ CurrStr+FuncDefineStr[-1] # insert Program just before the last bracket ')'
-                Count += 1
-                # print (Count)
-                # print (Str)
-                # if Count % 100 == 1:
+    useBottomUp = 1
+    if useBottomUp :
+        bottomup.solve(Type, Productions, StartSym, checker, FuncDefine)
+    else :
+        Count = 0
+        Ans  = ""
+        for i in range(20) :
+            flag = 0
+            TE_set = set()
+            BfsQueue = [[StartSym]] #Top-down
+            while(len(BfsQueue)!=0):
+                Curr = BfsQueue.pop(0)
+                TryExtend = Extend(Curr,Productions)
+                if(len(TryExtend)==0): # Nothing to
+                    #print(FuncDefine)
+                    # print("find", Curr)
+                    FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True) # use Force Bracket = True on function definition. MAGIC CODE. DO NOT MODIFY THE ARGUMENT ForceBracket = True.
+                    CurrStr = translator.toString(Curr)
+                    #SynFunResult = FuncDefine+Curr
+                    #Str = translator.toString(SynFunResult)
+                    Str = FuncDefineStr[:-1]+' '+ CurrStr+FuncDefineStr[-1] # insert Program just before the last bracket ')'
+                    Count += 1
                     # print (Count)
                     # print (Str)
-                    #raw_input()
-                #print '1'
-                counterexample = checker.check(Str)
-                #print counterexample
-                if(counterexample == None): # No counter-example
-                    Ans = Str
-                    flag = 1
-                    break
-                #print '2'
-            #print(TryExtend)
-            #raw_input()
-            #BfsQueue+=TryExtend
-            for TE in TryExtend:
-                TE_str = str(TE)
-                if count_size(TE) > i :
-                    continue
-                if not TE_str in TE_set:
-                    BfsQueue.append(TE)
-                    TE_set.add(TE_str)
-        if flag == 1 :
-            break
+                    # if Count % 100 == 1:
+                        # print (Count)
+                        # print (Str)
+                        #raw_input()
+                    #print '1'
+                    counterexample = checker.check(Str)
+                    #print counterexample
+                    if(counterexample == None): # No counter-example
+                        Ans = Str
+                        flag = 1
+                        break
+                    #print '2'
+                #print(TryExtend)
+                #raw_input()
+                #BfsQueue+=TryExtend
+                for TE in TryExtend:
+                    TE_str = str(TE)
+                    if count_size(TE) > i :
+                        continue
+                    if not TE_str in TE_set:
+                        BfsQueue.append(TE)
+                        TE_set.add(TE_str)
+            if flag == 1 :
+                break
 
-    print(Ans)
+        print(Ans)
 
 	# Examples of counter-examples    
 	# print (checker.check('(define-fun max2 ((x Int) (y Int)) Int 0)'))
