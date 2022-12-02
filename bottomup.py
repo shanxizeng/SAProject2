@@ -82,14 +82,15 @@ def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
             if Type[Nonterm] == Type[Start] :
                 for expr in temp[Nonterm] :
                     # print(1, expr)
+                    count += 1
+                    if count == 1000 :
+                        return
                     if prevexamples.check(expr) :
                         continue
                     FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True)
                     CurrStr = translator.toString(expr)
                     Str = FuncDefineStr[:-1]+' '+ CurrStr+FuncDefineStr[-1]
                     counterexample = checker.check(Str)
-                    # return
-                    count += 1
                     if counterexample == None : # No counter-example
                         print(Str)
                         return
@@ -100,6 +101,4 @@ def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
                         # for i in counterexample :
                         #     print(counterexample[i],type(counterexample[i]))
                         # print(counterexample, Str)
-                    # if count == 100 :
-                    #     return
     return

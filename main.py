@@ -58,6 +58,9 @@ if __name__ == '__main__':
             SynFunExpr=expr
         elif expr[0]=='constraint' :
             Constraints.append(expr)
+        elif expr[0]=='declare-var' :
+            if expr[2]=='Int' :
+                examples.all_consts[expr[1]]=0
     FuncDefine = ['define-fun']+SynFunExpr[1:4] #copy function signature
     # print(SynFunExpr)
     for i in range(0, len(SynFunExpr[2])) :

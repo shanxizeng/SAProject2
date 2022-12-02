@@ -40,15 +40,27 @@ class examp :
                 else :
                     return self.call(expr[3])
             elif expr[0] == '*' :
-                return self.call(expr[1]) + self.call(expr[2])
+                return self.call(expr[1]) * self.call(expr[2])
             elif expr[0] == 'div' :
-                return self.call(expr[1]) // self.call(expr[2])
+                temp = self.call(expr[2])
+                if temp == 0 :
+                    return 99999999999999999
+                else :
+                    return self.call(expr[1]) // temp
             elif expr[0] == 'mod' :
-                return self.call(expr[1]) % self.call(expr[2])
+                temp = self.call(expr[2])
+                if temp == 0 :
+                    return 99999999999999999
+                else :
+                    return self.call(expr[1]) % temp
             elif expr[0] == '<=' :
                 return self.call(expr[1]) <= self.call(expr[2])
             elif expr[0] == '>=' :
                 return self.call(expr[1]) >= self.call(expr[2])
+            elif expr[0] == '<' :
+                return self.call(expr[1]) < self.call(expr[2])
+            elif expr[0] == '>' :
+                return self.call(expr[1]) > self.call(expr[2])
             elif expr[0] == '=' :
                 return self.call(expr[1]) == self.call(expr[2])
             elif expr[0] == 'not' :
@@ -105,6 +117,7 @@ class examp :
                 for i in range(1, len(expr)) :
                     temp = self.eval(expr[i])
                     self.target_params[target_param[i-1]] = temp
+                # print(self.call(self.value), self.value, self.target_params)
                 return self.call(self.value)
             elif expr[0] == '+' :
                 return self.eval(expr[1]) + self.eval(expr[2])
@@ -119,15 +132,27 @@ class examp :
                 else :
                     return self.eval(expr[3])
             elif expr[0] == '*' :
-                return self.eval(expr[1]) + self.eval(expr[2])
+                return self.eval(expr[1]) * self.eval(expr[2])
             elif expr[0] == 'div' :
-                return self.eval(expr[1]) // self.eval(expr[2])
+                temp = self.eval(expr[2])
+                if temp == 0 :
+                    return 99999999999999999
+                else :
+                    return self.eval(expr[1]) // temp
             elif expr[0] == 'mod' :
-                return self.eval(expr[1]) % self.eval(expr[2])
+                temp = self.eval(expr[2])
+                if temp == 0 :
+                    return 99999999999999999
+                else :
+                    return self.eval(expr[1]) % temp
             elif expr[0] == '<=' :
                 return self.eval(expr[1]) <= self.eval(expr[2])
             elif expr[0] == '>=' :
                 return self.eval(expr[1]) >= self.eval(expr[2])
+            elif expr[0] == '<' :
+                return self.eval(expr[1]) < self.eval(expr[2])
+            elif expr[0] == '>' :
+                return self.eval(expr[1]) > self.eval(expr[2])
             elif expr[0] == '=' :
                 return self.eval(expr[1]) == self.eval(expr[2])
             elif expr[0] == 'not' :
@@ -154,6 +179,8 @@ class examp :
                     temp = all_consts[expr] 
                     if type(temp) == IntNumRef :
                         return temp.as_long()
+                    elif type(temp) == int :
+                        return temp
                     else : 
                         print(temp)
                         assert False
