@@ -20,13 +20,31 @@ class examp :
                     self.funcs[func.name()] = example[func]
         return
     
+    def static_call(self, func, param) :
+        if func == 'shr1' :
+            return param[0] >> 1
+        elif func == 'shr4' :
+            return param[0] >> 4
+        elif func == 'shr16' :
+            return param[0] >> 16
+        elif func == 'shl1' :
+            return param[0] << 1
+        elif func == 'if0' :
+            if param[0] == 1 :
+                return param[1]
+            else :
+                return param[2]
+        else :
+            print(func, param)
+            assert False
+    
     def call(self, expr) :
         if type(expr) == list :
             if expr[0] in self.funcs :
                 para = []
                 for term in expr[1:] :
                     para.append(self.call(term))
-                return self.funcs[expr[0]](para)
+                return self.static_call(expr[0], para)
             elif expr[0] == '+' :
                 return self.call(expr[1]) + self.call(expr[2])
             elif expr[0] == '-' :
@@ -71,6 +89,16 @@ class examp :
                 return self.call(expr[1]) and self.call(expr[2])
             elif expr[0] == '=>' :
                 return not self.call(expr[1]) or self.call(expr[2])
+            elif expr[0] == 'bvnot' :
+                return ~ self.call(expr[1])
+            elif expr[0] == 'bvand' :
+                return self.call(expr[1]) & self.call(expr[2])
+            elif expr[0] == 'bvadd' :
+                return self.call(expr[1]) + self.call(expr[2])
+            elif expr[0] == 'bvor' :
+                return self.call(expr[1]) | self.call(expr[2])
+            elif expr[0] == 'bvxor' :
+                return self.call(expr[1]) ^ self.call(expr[2])
             else :
                 print(expr)
                 assert False
@@ -98,6 +126,12 @@ class examp :
         elif type(expr) == tuple :
             if expr[0] == 'Int' :
                 return expr[1]
+            elif type(expr[0]) == list :
+                if expr[0][0] == 'BitVec' and expr[0][1] == ('Int', 64) :
+                    return expr[1]
+                else :
+                    print(expr)
+                    assert False
             else :
                 print(expr)
                 assert False
@@ -112,7 +146,7 @@ class examp :
                 para = []
                 for term in expr[1:] :
                     para.append(self.eval(term))
-                return self.funcs[expr[0]](para)
+                return self.static_call(expr[0], para)
             elif expr[0] == self.target_fun.name() :
                 for i in range(1, len(expr)) :
                     temp = self.eval(expr[i])
@@ -163,6 +197,16 @@ class examp :
                 return self.eval(expr[1]) and self.eval(expr[2])
             elif expr[0] == '=>' :
                 return not self.eval(expr[1]) or self.eval(expr[2])
+            elif expr[0] == 'bvnot' :
+                return ~ self.eval(expr[1])
+            elif expr[0] == 'bvand' :
+                return self.eval(expr[1]) & self.eval(expr[2])
+            elif expr[0] == 'bvadd' :
+                return self.eval(expr[1]) + self.eval(expr[2])
+            elif expr[0] == 'bvor' :
+                return self.eval(expr[1]) | self.eval(expr[2])
+            elif expr[0] == 'bvxor' :
+                return self.eval(expr[1]) ^ self.eval(expr[2])
             else :
                 print(expr)
                 assert False
@@ -190,6 +234,12 @@ class examp :
         elif type(expr) == tuple :
             if expr[0] == 'Int' :
                 return expr[1]
+            elif type(expr[0]) == list :
+                if expr[0][0] == 'BitVec' and expr[0][1] == ('Int', 64) :
+                    return expr[1]
+                else :
+                    print(expr)
+                    assert False
             else :
                 print(expr)
                 assert False

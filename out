@@ -1,1 +1,0 @@
-(define-fun f ((x Int)) Int (mod (* x 3) 10))

@@ -83,8 +83,8 @@ def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
                 for expr in temp[Nonterm] :
                     # print(1, expr)
                     count += 1
-                    if count == 1000 :
-                        return
+                    # if count == 1000 :
+                    #     return
                     if prevexamples.check(expr) :
                         continue
                     FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True)
