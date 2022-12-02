@@ -1,4 +1,5 @@
 import translator
+from main import prevexamples
 
 def contains(Exprs, Nums, Term) :
     return Nums in Exprs and Term in Exprs[Nums]
@@ -64,12 +65,15 @@ def searchNewExpr(Exprs, Productions, Nondetermain, Size) :
         Ret[Nonterm] = possible_list
     return Ret
 
-def solve(Type, Productions, Start, checker, FuncDefine) :
+def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
     Exprs = {}
     Nondetermain = set()
     for Nonterm in Productions :
         Nondetermain.add(Nonterm)
+    for constraint in Constraints :
+        prevexamples.add_constraint(constraint)
     size = 1
+    count = 0
     while 1 :
         temp = searchNewExpr(Exprs, Productions, Nondetermain, size)
         Exprs[size] = temp
@@ -77,12 +81,25 @@ def solve(Type, Productions, Start, checker, FuncDefine) :
         for Nonterm in Nondetermain :
             if Type[Nonterm] == Type[Start] :
                 for expr in temp[Nonterm] :
+                    # print(1, expr)
+                    if prevexamples.check(expr) :
+                        continue
                     FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True)
                     CurrStr = translator.toString(expr)
                     Str = FuncDefineStr[:-1]+' '+ CurrStr+FuncDefineStr[-1]
                     counterexample = checker.check(Str)
-                    #print counterexample
-                    if(counterexample == None): # No counter-example
+                    # return
+                    count += 1
+                    if counterexample == None : # No counter-example
                         print(Str)
                         return
+                    else :
+                        # print(counterexample)
+                        prevexamples.add_example(counterexample)
+                        # print(type(counterexample),counterexample)
+                        # for i in counterexample :
+                        #     print(counterexample[i],type(counterexample[i]))
+                        # print(counterexample, Str)
+                    # if count == 100 :
+                    #     return
     return

@@ -129,7 +129,7 @@ if __name__ == "__main__":
     outfile = open(testresultfile, "w")
     toexe = mainprogram+" "
     outfile.write( "start testing: \n")
-    cmd = "python3 "
+    cmd = "python "
 
     for j, testgroup in enumerate([open_bv_tests, open_tests]):
         for test in os.listdir(testgroup):

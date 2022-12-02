@@ -3,6 +3,9 @@ import sexp
 import pprint
 import translator
 import bottomup
+import examples
+
+prevexamples = examples.examples()
 
 def Extend(Stmts,Productions):
     ret = []
@@ -39,20 +42,26 @@ def count_size(Stmts) :
 if __name__ == '__main__':
     benchmarkFile = open(sys.argv[1])
     bm = stripComments(benchmarkFile)
-    #print(bm)
+    # print(bm)
     bmExpr = sexp.sexp.parseString(bm, parseAll=True).asList()[0] #Parse string to python list
-    #pprint.pprint(bmExpr)
+    # pprint.pprint(bmExpr)
     checker=translator.ReadQuery(bmExpr)
     #print (checker.check('(define-fun f ((x Int)) Int (mod (* x 3) 10)  )'))
     #raw_input()
     SynFunExpr = []
+    Constraints = []
     StartSym = 'My-Start-Symbol' #virtual starting symbol
     for expr in bmExpr:
         if len(expr)==0:
             continue
         elif expr[0]=='synth-fun':
             SynFunExpr=expr
+        elif expr[0]=='constraint' :
+            Constraints.append(expr)
     FuncDefine = ['define-fun']+SynFunExpr[1:4] #copy function signature
+    # print(SynFunExpr)
+    for i in range(0, len(SynFunExpr[2])) :
+        examples.target_param.append(SynFunExpr[2][i][0])
     #print(FuncDefine)
     Productions = {StartSym:[]}
     Type = {StartSym:SynFunExpr[3]} # set starting symbol's return type
@@ -66,7 +75,7 @@ if __name__ == '__main__':
     # print(Productions)
     useBottomUp = 1
     if useBottomUp :
-        bottomup.solve(Type, Productions, StartSym, checker, FuncDefine)
+        bottomup.solve(Type, Productions, StartSym, checker, FuncDefine, Constraints)
     else :
         Count = 0
         Ans  = ""
