@@ -2,11 +2,30 @@ from z3 import *
 
 all_consts = {}
 target_param = []
+const_calling = []
+nonconst_calling = []
+target_func = ''
+
+def extract_calling(constraint) :
+    if type(constraint) == list :
+        if constraint[0] == target_func :
+            for i in range(1, len(constraint)) :
+                if type(constraint[i]) == str or type(constraint[i]) == list :
+                    if constraint not in nonconst_calling :
+                        nonconst_calling.append(constraint)
+                    return
+            if constraint not in const_calling :
+                const_calling.append(constraint)
+            return
+        else :
+            for i in range(1, len(constraint)) :
+                extract_calling(constraint[i])
+    return
 
 class examp :
     def __init__(self, example) :
         self.consts = {}
-        self.funcs = {}
+        self.funcs = {'shr1' : 0, 'shr4' : 0, 'shr16' : 0, 'shl1' : 0, 'if0' : 0}
         self.constraints = []
         self.target_params = {}
         self.target_fun = example[len(example)-1]
@@ -147,7 +166,7 @@ class examp :
                 for term in expr[1:] :
                     para.append(self.eval(term))
                 return self.static_call(expr[0], para)
-            elif expr[0] == self.target_fun.name() :
+            elif expr[0] == target_func :
                 for i in range(1, len(expr)) :
                     temp = self.eval(expr[i])
                     self.target_params[target_param[i-1]] = temp
@@ -249,6 +268,7 @@ class examp :
 
     def check(self, expr, constraints) :
         # print(2, expr, self.consts)
+        # print(target_func)
         self.value = expr
         # print(self.value)
         for constraint in constraints :
@@ -277,6 +297,25 @@ class examples :
     def add_constraint(self, constraint) :
         if len(constraint) == 2 :
             self.constraints.append(constraint[1])
+            extract_calling(constraint[1])
         else :
             self.constraints.append(constraint[1:])
+            extract_calling(constraint[1:])
         return
+    
+    def get_value(self, expr) :
+        ret = []
+        exam = examp([1])
+        for calling in const_calling :
+            # print(calling)
+            for i in range(1, len(calling)) :
+                exam.target_params[target_param[i-1]] = exam.eval(calling[i])
+            ret.append(exam.call(expr))
+        for example in self.examples :
+            for calling in nonconst_calling :
+                # print(calling)
+                for i in range(1, len(calling)) :
+                    temp = example.eval(calling[i])
+                    exam.target_params[target_param[i-1]] = temp
+                ret.append(exam.call(expr))
+        return ret

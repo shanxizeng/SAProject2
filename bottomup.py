@@ -1,5 +1,8 @@
 import translator
+import listTrie
 from main import prevexamples
+
+value_set = listTrie.listTrie()
 
 def contains(Exprs, Nums, Term) :
     return Nums in Exprs and Term in Exprs[Nums]
@@ -62,7 +65,15 @@ def searchNewExpr(Exprs, Productions, Nondetermain, Size) :
                                         break
                                 break
                         break
-        Ret[Nonterm] = possible_list
+        new_list = []
+        for expr in possible_list :
+            # print(expr)
+            temp = prevexamples.get_value(expr)
+            if value_set.search(temp) == None :
+                new_list.append(expr)
+                value_set.insert(temp,expr)
+        Ret[Nonterm] = new_list
+        # Ret[Nonterm] = possible_list
     return Ret
 
 def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
@@ -76,12 +87,13 @@ def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
     count = 0
     while 1 :
         temp = searchNewExpr(Exprs, Productions, Nondetermain, size)
+        # print(3, temp, size)
         Exprs[size] = temp
         size += 1
         for Nonterm in Nondetermain :
             if Type[Nonterm] == Type[Start] :
                 for expr in temp[Nonterm] :
-                    # print(1, expr)
+                    print(1, expr)
                     count += 1
                     # if count == 1000 :
                     #     return
@@ -93,12 +105,13 @@ def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
                     counterexample = checker.check(Str)
                     if counterexample == None : # No counter-example
                         print(Str)
-                        return
+                        return True
                     else :
-                        # print(counterexample)
+                        print(counterexample)
                         prevexamples.add_example(counterexample)
+                        return False
                         # print(type(counterexample),counterexample)
                         # for i in counterexample :
                         #     print(counterexample[i],type(counterexample[i]))
                         # print(counterexample, Str)
-    return
+    return False

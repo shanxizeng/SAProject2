@@ -62,6 +62,7 @@ if __name__ == '__main__':
             if expr[2]=='Int' :
                 examples.all_consts[expr[1]]=0
     FuncDefine = ['define-fun']+SynFunExpr[1:4] #copy function signature
+    examples.target_func = SynFunExpr[1]
     # print(SynFunExpr)
     for i in range(0, len(SynFunExpr[2])) :
         examples.target_param.append(SynFunExpr[2][i][0])
@@ -78,7 +79,8 @@ if __name__ == '__main__':
     # print(Productions)
     useBottomUp = 1
     if useBottomUp :
-        bottomup.solve(Type, Productions, StartSym, checker, FuncDefine, Constraints)
+        while not bottomup.solve(Type, Productions, StartSym, checker, FuncDefine, Constraints) :
+            continue
     else :
         Count = 0
         Ans  = ""
