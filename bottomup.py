@@ -77,6 +77,7 @@ def searchNewExpr(Exprs, Productions, Nondetermain, Size) :
     return Ret
 
 def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
+    value_set.clear()
     Exprs = {}
     Nondetermain = set()
     for Nonterm in Productions :
@@ -93,7 +94,7 @@ def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
         for Nonterm in Nondetermain :
             if Type[Nonterm] == Type[Start] :
                 for expr in temp[Nonterm] :
-                    print(1, expr)
+                    # print(1, expr)
                     count += 1
                     # if count == 1000 :
                     #     return
@@ -107,7 +108,7 @@ def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
                         print(Str)
                         return True
                     else :
-                        print(counterexample)
+                        # print(counterexample)
                         prevexamples.add_example(counterexample)
                         return False
                         # print(type(counterexample),counterexample)

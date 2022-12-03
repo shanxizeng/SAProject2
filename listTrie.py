@@ -9,6 +9,9 @@ class listTrie :
         self.root = TrieNode('root')
         return
 
+    def clear(self) :
+        self.root = TrieNode('root')
+
     def insert(self, key, value) :
         temp = self.root
         for i in key :
