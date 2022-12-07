@@ -296,7 +296,7 @@ def work(checker, Constraints) :
                 if flag :
                     pexample.append(c)
         cond = DNF_solver(pexample, nexample)
-        conditions.append(cond)
+        conditions.append(['bvand',cond,1])
     n = n - 1
     res = terms[n]
     while n != 0 :
