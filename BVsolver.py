@@ -116,10 +116,25 @@ def get_conditions(s) :
     n = len(res)
     for i in range(0, n) :
         res.append(['bvnot',res[i]])
+    # print(res)
     return res
 
-def simply(clause) :
-    return clause
+def simply(clause, nexamples) :
+    ret = []
+    temp = []
+    for x in nexamples :
+        temp.append(x)
+    for c in clause :
+        t = []
+        # print(c,len(temp))
+        for x in temp :
+            if calc_bv(c, x[1][1][1][1]) & 1 :
+                t.append(x)
+        if len(t) == len(temp) :
+            continue
+        ret.append(c)
+        temp = t
+    return ret
 
 def get_candidate_clause(conditions, pexamples, nexamples, k, s) :
     ret = [([],pexamples)]
@@ -156,7 +171,7 @@ def get_candidate_clause(conditions, pexamples, nexamples, k, s) :
                 bj = False
                 break
         if bj :
-            ans.append(simply(i[0]))
+            ans.append(simply(i[0],nexamples))
     return ans
 
 def DNF_search(conditions, pexamples, nexamples, k, s) :
@@ -165,6 +180,8 @@ def DNF_search(conditions, pexamples, nexamples, k, s) :
     if k == 0 :
         return None
     temp = get_candidate_clause(conditions, pexamples, nexamples, k, s)
+    # print(k,s)
+    # print(temp)
     for c in temp :
         npexamples = []
         for x in pexamples :
@@ -255,8 +272,7 @@ def work(checker, Constraints) :
             if len(temp) == 1 :
                 break
         if len(temp) == 0 :
-            print('failed')
-            continue
+            return 'failed'
         # print('pass',constraint[1][1][1][1])
         poss_bv[constraint[1][1][1][1]] = temp
     
