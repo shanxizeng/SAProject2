@@ -205,6 +205,35 @@ def DNF_solver(pexamples, nexamples) :
         s += 1
     return None
 
+def trans(x) :
+    if type(x) == list :
+        if x[0] == 'shl' :
+            if x[2] == 0 :
+                return trans(x[1])
+            else :
+                x[2] -= 1
+                return ['shl1',trans(x)]
+        elif x[0] == 'shr' :
+            if x[2] >= 16 :
+                x[2] -= 16
+                return ['shr16', trans(x)]
+            elif x[2] >= 4 :
+                x[2] -= 4
+                return ['shr4', trans(x)]
+            elif x[2] >= 1 :
+                x[2] -= 1
+                return ['shr1', trans(x)]
+            else :
+                return trans(x[1])
+        else :
+            for i in range(1, len(x)) :
+                x[i] = trans(x[i])
+            return x
+    elif type(x) == str :
+        return x
+    else :
+        return (['BitVec',('Int',64)],x)
+
 def work(checker, Constraints) :
     bvs.append([])
     bvs.append([])
@@ -256,6 +285,7 @@ def work(checker, Constraints) :
     res = terms[n]
     while n != 0 :
         n = n - 1
-        res = ['if', conditions[n], terms[n], res]
-    print(res)
+        res = ['if0', conditions[n], terms[n], res]
+    print(trans(res))
+    # print(Constraints)
     return
