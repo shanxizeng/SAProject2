@@ -86,7 +86,11 @@ if __name__ == '__main__':
         Productions[NTName] = NonTerm[2]
     # print(Productions)
     if listTrie.isLIA == 0 :
-        BVsolver.work(checker, Constraints)
+        temp = BVsolver.work(checker, Constraints)
+        FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True) 
+        CurrStr = translator.toString(temp)
+        Str = FuncDefineStr[:-1]+' '+ CurrStr+FuncDefineStr[-1] 
+        print(Str)
         exit()
     useBottomUp = 1
     if useBottomUp :

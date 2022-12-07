@@ -286,6 +286,5 @@ def work(checker, Constraints) :
     while n != 0 :
         n = n - 1
         res = ['if0', conditions[n], terms[n], res]
-    print(trans(res))
     # print(Constraints)
-    return
+    return trans(res)
