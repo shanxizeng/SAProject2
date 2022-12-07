@@ -50,14 +50,14 @@ def solver(samples, Constraints, minlen) :
         for bv in poss_bv[i[1][1][1][1]] :
             flag = False
             for x in samples :
-                if calc_bv(bv,x[1][1][1][1]) != x[1][2][1] :
+                if calc_bv(bv,x[1][1][1][1])  & 0xffffffffffffffff != x[1][2][1] :
                     flag = True
                     break
             if flag :
                 continue
             count = 0
             for x in Constraints :
-                if calc_bv(bv,x[1][1][1][1]) == x[1][2][1] :
+                if calc_bv(bv,x[1][1][1][1])  & 0xffffffffffffffff == x[1][2][1] :
                     count += 1
             if count >= minlen :
                 return bv
@@ -84,7 +84,7 @@ def term_search(Constrains, k, n, s) :
     for p in temp :
         newConstraints = []
         for c in Constrains :
-            if calc_bv(p,c[1][1][1][1]) != c[1][2][1] :
+            if calc_bv(p,c[1][1][1][1])  & 0xffffffffffffffff != c[1][2][1] :
                 newConstraints.append(c)
         res = term_search(newConstraints, k - 1, n, s)
         if res != None :
@@ -264,7 +264,7 @@ def work(checker, Constraints) :
         temp = []
         for i in range(1,8) :
             for bv in bvs[i] :
-                if calc_bv(bv,constraint[1][1][1][1]) == constraint[1][2][1] :
+                if calc_bv(bv,constraint[1][1][1][1]) & 0xffffffffffffffff == constraint[1][2][1] :
                     # print('passed',bv)
                     temp.append(bv)
                     if len(temp) == 1 :
@@ -275,9 +275,7 @@ def work(checker, Constraints) :
             return 'failed'
         # print('pass',constraint[1][1][1][1])
         poss_bv[constraint[1][1][1][1]] = temp
-    
     terms = term_solver(Constraints)
-    # print(terms)
     terms.reverse()
     n = len(terms)
     conditions = []
