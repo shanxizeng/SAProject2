@@ -124,7 +124,7 @@ def my_test(cmd, outputfile, testname, timeout=300):
 
 
 if __name__ == "__main__":
-    timeout = 10
+    timeout = 60
     testresultfile = "result.txt"
     outfile = open(testresultfile, "w")
     toexe = mainprogram+" "

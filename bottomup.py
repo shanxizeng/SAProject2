@@ -67,8 +67,11 @@ def searchNewExpr(Exprs, Productions, Nondetermain, Size) :
                         break
         new_list = []
         for expr in possible_list :
-            # print(expr)
             temp = prevexamples.get_value(expr)
+            # print(expr, temp)
+            # if temp == [0,1] and type(temp[0]) == int :
+            #     print(value_set.search(temp))
+            #     assert False
             if value_set.search(temp) == None :
                 new_list.append(expr)
                 value_set.insert(temp,expr)
@@ -77,6 +80,7 @@ def searchNewExpr(Exprs, Productions, Nondetermain, Size) :
     return Ret
 
 def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
+    # print(prevexamples.get_value(['if0',['bvand','x',],'y','x']))
     value_set.clear()
     Exprs = {}
     Nondetermain = set()
@@ -88,13 +92,13 @@ def solve(Type, Productions, Start, checker, FuncDefine, Constraints) :
     count = 0
     while 1 :
         temp = searchNewExpr(Exprs, Productions, Nondetermain, size)
-        # print(3, temp, size)
+        print(3, size)
         Exprs[size] = temp
         size += 1
         for Nonterm in Nondetermain :
             if Type[Nonterm] == Type[Start] :
                 for expr in temp[Nonterm] :
-                    # print(1, expr)
+                    # print(1, expr, prevexamples.get_value(expr))
                     count += 1
                     # if count == 1000 :
                     #     return

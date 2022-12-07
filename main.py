@@ -4,6 +4,8 @@ import pprint
 import translator
 import bottomup
 import examples
+import listTrie
+import BVsolver
 
 prevexamples = examples.examples()
 
@@ -51,7 +53,9 @@ if __name__ == '__main__':
     SynFunExpr = []
     Constraints = []
     StartSym = 'My-Start-Symbol' #virtual starting symbol
+    # print(bmExpr)
     for expr in bmExpr:
+        # print(expr)
         if len(expr)==0:
             continue
         elif expr[0]=='synth-fun':
@@ -61,6 +65,10 @@ if __name__ == '__main__':
         elif expr[0]=='declare-var' :
             if expr[2]=='Int' :
                 examples.all_consts[expr[1]]=0
+        elif expr[0]=='set-logic' :
+            # print(expr)
+            if expr[1] == 'BV' :
+                listTrie.isLIA = 0
     FuncDefine = ['define-fun']+SynFunExpr[1:4] #copy function signature
     examples.target_func = SynFunExpr[1]
     # print(SynFunExpr)
@@ -77,6 +85,9 @@ if __name__ == '__main__':
         Type[NTName] = NTType
         Productions[NTName] = NonTerm[2]
     # print(Productions)
+    if listTrie.isLIA == 0 :
+        BVsolver.work(checker, Constraints)
+        exit()
     useBottomUp = 1
     if useBottomUp :
         while not bottomup.solve(Type, Productions, StartSym, checker, FuncDefine, Constraints) :
