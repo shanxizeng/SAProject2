@@ -29,21 +29,23 @@ def enumerate_bv(size) :
 
 def calc_bv(bv, xvalue) :
     if type(bv) == list :
+        res = 0
         if bv[0] == 'bvand' :
-            return calc_bv(bv[1],xvalue) & calc_bv(bv[2],xvalue)
+            res =  calc_bv(bv[1],xvalue) & calc_bv(bv[2],xvalue)
         if bv[0] == 'bvor' :
-            return calc_bv(bv[1],xvalue) | calc_bv(bv[2],xvalue)
+            res =  calc_bv(bv[1],xvalue) | calc_bv(bv[2],xvalue)
         if bv[0] == 'bvxor' :
-            return calc_bv(bv[1],xvalue) ^ calc_bv(bv[2],xvalue)
+            res =  calc_bv(bv[1],xvalue) ^ calc_bv(bv[2],xvalue)
         if bv[0] == 'bvnot' :
-            return ~ calc_bv(bv[1],xvalue)
+            res = ~ calc_bv(bv[1],xvalue)
         if bv[0] == 'shl' :
-            return ( calc_bv(bv[1],xvalue) << bv[2] ) & 0xffffffffffffffff
+            res =  calc_bv(bv[1],xvalue) << bv[2]
         if bv[0] == 'shr' :
-            return ( calc_bv(bv[1],xvalue) >> bv[2] ) & 0xffffffffffffffff
+            res =  calc_bv(bv[1],xvalue) >> bv[2]
+        return res & 0xffffffffffffffff
     if bv == 'x' :
-        return xvalue
-    return bv
+        return xvalue & 0xffffffffffffffff
+    return bv  & 0xffffffffffffffff
 
 def solver(samples, Constraints, minlen) :
     for i in samples :
