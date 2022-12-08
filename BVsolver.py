@@ -301,8 +301,8 @@ def DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s) :
     for c in bases :
         n = len(ret)
         for j in range(0, n) :
-            if len(ret[j][0]) >= 4 * s :
-                continue
+            # if len(ret[j][0]) >= 4 * s :
+            #     continue
             temp = (calc_bv(c, x) & ret[j][1]) & 0xffffffffffffffff
             if count_ones(temp) < count_ones(ptarget) // k :
                 continue
@@ -349,6 +349,20 @@ def DNFterm_search(bases, x, ptarget, ntarget, k, s) :
                 return ['bvor', res, c]
     return None
 
+def get_terms(s, xv) :
+    res = []
+    se = set()
+    for j in range(0, s) :
+        for i in bvs[j] :
+            if type(i) == list :
+                if i[0] == 'bvand' or i[0] == 'bvor' :
+                    continue
+            if calc_bv(i, xv) in se :
+                continue
+            se.add(calc_bv(i,xv))
+            res.append(i)
+    return res
+
 def DNF_forterm(constraint) :
     res = []
     s = 1
@@ -360,8 +374,8 @@ def DNF_forterm(constraint) :
                 if (kk,ss) in visit :
                     continue
                 visit.add((kk,ss))
-                # print(kk,ss)
-                bases = get_conditions(ss)
+                bases = get_terms(ss, constraint[1][1][1][1])
+                # print(kk,ss,bases)
                 temp = DNFterm_search(bases, constraint[1][1][1][1], constraint[1][2][1], (~ constraint[1][2][1]) & 0xffffffffffffffff, kk, ss)
                 if temp != None :
                     if temp == [] :
@@ -386,7 +400,7 @@ def work(checker, Constraints) :
     prevterms = []
     for i in range(2,6) :
         enumerate_bv(i)
-        # print(i,len(bvs[i]))
+        print(i,len(bvs[i]))
     for constraint in Constraints :
         # temp = []
         # for i in range(1,8) :
@@ -420,7 +434,7 @@ def work(checker, Constraints) :
         assert calc_bv(temp[0],constraint[1][1][1][1]) == constraint[1][2][1]
         poss_bv[constraint[1][1][1][1]] = temp
         prevterms.append(temp)
-        # print(temp)
+        print(temp)
     # return
     terms = term_solver(Constraints)
     # print(terms)
