@@ -22,6 +22,7 @@ def enumerate_bv(size) :
         for bvl in bvs[i] :
             for bvr in bvs[size-i-1] :
                 ans.append(['bvand',bvl,bvr])
+                ans.append(['bvadd',bvl,bvr])
                 ans.append(['bvor',bvl,bvr])
                 ans.append(['bvxor',bvl,bvr])
     bvs.append(ans)
@@ -31,17 +32,19 @@ def calc_bv(bv, xvalue) :
     if type(bv) == list :
         res = 0
         if bv[0] == 'bvand' :
-            res =  calc_bv(bv[1],xvalue) & calc_bv(bv[2],xvalue)
+            res = calc_bv(bv[1],xvalue) & calc_bv(bv[2],xvalue)
         if bv[0] == 'bvor' :
-            res =  calc_bv(bv[1],xvalue) | calc_bv(bv[2],xvalue)
+            res = calc_bv(bv[1],xvalue) | calc_bv(bv[2],xvalue)
         if bv[0] == 'bvxor' :
-            res =  calc_bv(bv[1],xvalue) ^ calc_bv(bv[2],xvalue)
+            res = calc_bv(bv[1],xvalue) ^ calc_bv(bv[2],xvalue)
         if bv[0] == 'bvnot' :
             res = ~ calc_bv(bv[1],xvalue)
         if bv[0] == 'shl' :
             res =  calc_bv(bv[1],xvalue) << bv[2]
         if bv[0] == 'shr' :
             res =  calc_bv(bv[1],xvalue) >> bv[2]
+        if bv[0] == 'bvadd' :
+            res = calc_bv(bv[1],xvalue) & calc_bv(bv[2],xvalue)
         return res & 0xffffffffffffffff
     if bv == 'x' :
         return xvalue & 0xffffffffffffffff
@@ -119,15 +122,8 @@ def term_solver(Constraints) :
 
 def get_conditions(s) :
     res = []
-    res.append(0)
-    for i in range(0, 64) :
-        res.append(['shl','x',i])
-        res.append(['shr','x',i])
-        res.append(['shl',1,i])
-    n = len(res)
-    for i in range(0, n) :
-        res.append(['bvnot',res[i]])
-    # print(res)
+    for i in bvs[s] :
+        res.append(i)
     return res
 
 def simply(clause, nexamples) :
@@ -218,13 +214,13 @@ def DNF_solver(pexamples, nexamples) :
     s = 1
     k = 1
     visit = set()
-    conditions = get_conditions(s)
-    while True :
+    while s < 8 :
         for kk in range(1, k+1) :
             for ss in range(1, s+1) :
                 if (kk,ss) in visit :
                     continue
                 # print(kk,ss)
+                conditions = get_conditions(ss)
                 visit.add((kk,ss))
                 temp = DNF_search(conditions, pexamples, nexamples, kk, ss)
                 if temp != None :
@@ -305,7 +301,7 @@ def DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s) :
     for c in bases :
         n = len(ret)
         for j in range(0, n) :
-            if len(ret[j][0]) >= 2 * s :
+            if len(ret[j][0]) >= 8 * s :
                 continue
             temp = (calc_bv(c, x) & ret[j][1]) & 0xffffffffffffffff
             if count_ones(temp) < count_ones(ptarget) // k :
@@ -325,7 +321,7 @@ def DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s) :
         for c in i[0] :
             temp = temp & calc_bv(c, x)
         if temp & ntarget == 0 :
-            t = DNFterm_simply(i[0],x,ntarget, s)
+            t = DNFterm_simply(i[0],x,ntarget, s*2)
             if t == None :
                 continue
             res = []
@@ -343,7 +339,6 @@ def DNFterm_search(bases, x, ptarget, ntarget, k, s) :
     if k == 0 :
         return None
     temp = DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s)
-    # temp = get_candidate_clause(conditions, pexamples, nexamples, k, s)
     for c in temp :
         assert (ntarget & calc_bv(c, x)) == 0
         res = DNFterm_search(bases, x, (ptarget ^ calc_bv(c, x)) & 0xffffffffffffffff, ntarget, k - 1, s)
@@ -357,23 +352,23 @@ def DNFterm_search(bases, x, ptarget, ntarget, k, s) :
 def DNF_forterm(constraint) :
     res = []
     s = 1
-    k = 1
+    k = 2
     visit = set()
-    bases = get_conditions(s)
-    while True :
+    while s < 8 :
         for kk in range(1, k+1) :
             for ss in range(1, s+1) :
                 if (kk,ss) in visit :
                     continue
                 visit.add((kk,ss))
                 # print(kk,ss)
+                bases = get_conditions(ss)
                 temp = DNFterm_search(bases, constraint[1][1][1][1], constraint[1][2][1], (~ constraint[1][2][1]) & 0xffffffffffffffff, kk, ss)
                 if temp != None :
                     if temp == [] :
                         return [0]
                     else :
                         return [temp]
-        k += 1
+        k += 2
         s += 1
     return None
 
@@ -389,9 +384,9 @@ def work(checker, Constraints) :
     bvs[1].append(1)
     bvs[1].append('x')
     prevterms = []
-    # for i in range(2,8) :
-    #     enumerate_bv(i)
-        # print(len(bvs[i]))
+    for i in range(2,8) :
+        enumerate_bv(i)
+        # print(i,len(bvs[i]))
     for constraint in Constraints :
         # temp = []
         # for i in range(1,8) :
