@@ -47,6 +47,15 @@ def calc_bv(bv, xvalue) :
         return xvalue & 0xffffffffffffffff
     return bv  & 0xffffffffffffffff
 
+def deep_copy(l) :
+    if type(l) == list :
+        ret = []
+        for i in l :
+            ret.append(i)
+        return ret
+    else :
+        return l
+
 def solver(samples, Constraints, minlen) :
     for i in samples :
         for bv in poss_bv[i[1][1][1][1]] :
@@ -274,25 +283,29 @@ def count_ones(x) :
         x = x >> 1
     return ans
 
-def DNFterm_simply(clause, x, ntarget) :
-    ret = []
-    temp = ntarget
+def DNFterm_simply(clause, x, ntarget, s) :
+    if s == 0 :
+        return None
+    if ntarget == 0 :
+        return []
     for c in clause :
-        t = (~ calc_bv(c, x)) & 0xffffffffffffffff & temp
-        # print(t)
-        # print(c,len(temp))
-        if t == 0 :
+        t = ((~ calc_bv(c, x)) & 0xffffffffffffffff) & ntarget
+        if count_ones(t) < count_ones(ntarget) // s :
             continue
-        ret.append(c)
-        temp = t ^ temp
-    return ret
+        res = DNFterm_simply(clause, x, ntarget ^ t, s - 1)
+        if res == None :
+            continue
+        res.append(c)
+        return res
+    return None
 
 def DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s) :
+    # print(ptarget, ntarget)
     ret = [([],ptarget)]
     for c in bases :
         n = len(ret)
         for j in range(0, n) :
-            if len(ret[j][0]) >= s :
+            if len(ret[j][0]) >= 2 * s :
                 continue
             temp = (calc_bv(c, x) & ret[j][1]) & 0xffffffffffffffff
             if count_ones(temp) < count_ones(ptarget) // k :
@@ -305,15 +318,16 @@ def DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s) :
                     t[0].append(z)
                 t[0].append(c)
                 ret.append(t)
-    # for i in ret :
-    #     print(i[0])
+    # print(k,s,ret)
     ans = []
     for i in ret :
         temp = 0xffffffffffffffff
         for c in i[0] :
             temp = temp & calc_bv(c, x)
         if temp & ntarget == 0 :
-            t = DNFterm_simply(i[0],x,ntarget)
+            t = DNFterm_simply(i[0],x,ntarget, s)
+            if t == None :
+                continue
             res = []
             for y in t :
                 if res == [] :
@@ -330,15 +344,14 @@ def DNFterm_search(bases, x, ptarget, ntarget, k, s) :
         return None
     temp = DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s)
     # temp = get_candidate_clause(conditions, pexamples, nexamples, k, s)
-    # print(k,s)
-    # print(temp)
     for c in temp :
+        assert (ntarget & calc_bv(c, x)) == 0
         res = DNFterm_search(bases, x, (ptarget ^ calc_bv(c, x)) & 0xffffffffffffffff, ntarget, k - 1, s)
         if res != None :
             if res == [] :
-                return temp
+                return c
             else :
-                return ['bvor', res, temp]
+                return ['bvor', res, c]
     return None
 
 def DNF_forterm(constraint) :
@@ -352,21 +365,30 @@ def DNF_forterm(constraint) :
             for ss in range(1, s+1) :
                 if (kk,ss) in visit :
                     continue
-                # print(kk,ss)
                 visit.add((kk,ss))
+                # print(kk,ss)
                 temp = DNFterm_search(bases, constraint[1][1][1][1], constraint[1][2][1], (~ constraint[1][2][1]) & 0xffffffffffffffff, kk, ss)
                 if temp != None :
-                    return temp
+                    if temp == [] :
+                        return [0]
+                    else :
+                        return [temp]
         k += 1
         s += 1
     return None
 
 def work(checker, Constraints) :
+    # test = ['bvand','x',['bvand',['shr','x',15],['bvnot',1]]]
+    # xv = 4206553026002610923
+    # print(calc_bv(test,xv))
+    # return
+
     bvs.append([])
     bvs.append([])
     bvs[1].append(0)
     bvs[1].append(1)
     bvs[1].append('x')
+    prevterms = []
     # for i in range(2,8) :
     #     enumerate_bv(i)
         # print(len(bvs[i]))
@@ -384,11 +406,29 @@ def work(checker, Constraints) :
         # if len(temp) == 0 :
         #     return 'failed'
         # print('pass',constraint[1][1][1][1])
-        temp = DNF_forterm(constraint)
+        flag = False
+        # print(constraint,prevterms)
+        for cc in prevterms :
+            for c in cc :
+                if calc_bv(c, constraint[1][1][1][1]) & 0xffffffffffffffff == constraint[1][2][1] :
+                    # print(constraint[1][1][1][1],c)
+                    poss_bv[constraint[1][1][1][1]] = cc
+                    flag = True
+                    break
+            if flag :
+                break
+        if flag :
+            continue
+        temp = deep_copy(DNF_forterm(constraint))
         if temp == None :
             return 'failed'
+        assert calc_bv(temp[0],constraint[1][1][1][1]) == constraint[1][2][1]
         poss_bv[constraint[1][1][1][1]] = temp
+        prevterms.append(temp)
+        # print(temp)
+    # return
     terms = term_solver(Constraints)
+    # print(terms)
     terms.reverse()
     n = len(terms)
     conditions = []

@@ -6,6 +6,7 @@ import bottomup
 import examples
 import listTrie
 import BVsolver
+import bv
 
 prevexamples = examples.examples()
 
@@ -42,6 +43,29 @@ def count_size(Stmts) :
 
 
 if __name__ == '__main__':
+#     benchmarkFile = open(sys.argv[1])
+#     bm = stripComments(benchmarkFile)
+#     bmExpr = sexp.sexp.parseString(bm, parseAll=True).asList()[0] #Parse string to python list
+#     checker=translator.ReadQuery(bmExpr)
+#    # print (checker.check('(define-fun f ((x Int)) Int (mod (* x 3) 10)  )'))
+#     #raw_input()
+#     FuncDefine, Productions, Constraints = bv.ParseBmExpr(bmExpr)    
+#     #pprint.pprint(Productions)
+#     thres = 2
+#     progs = []
+#     while True:
+#         #print(thres)
+#         #time.sleep(1)
+#         progs = bv.solver(Productions, Constraints, thres)
+#         #print(progs)
+#         #time.sleep(1)
+#         if not len(progs) == 0:
+#             ##print([(prog[0], prog[1].toString()) for prog in progs])
+#             break
+#         thres += 1
+#     print(progs)
+#     exit()
+
     benchmarkFile = open(sys.argv[1])
     bm = stripComments(benchmarkFile)
     # print(bm)
