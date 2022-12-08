@@ -87,6 +87,7 @@ if __name__ == '__main__':
     # print(Productions)
     if listTrie.isLIA == 0 :
         temp = BVsolver.work(checker, Constraints)
+        # print(temp)
         FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True) 
         CurrStr = translator.toString(temp)
         Str = FuncDefineStr[:-1]+' '+ CurrStr+FuncDefineStr[-1] 

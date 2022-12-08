@@ -201,7 +201,7 @@ def DNF_search(conditions, pexamples, nexamples, k, s) :
                 return temp
             else :
                 return ['bvor', res, temp]
-    return
+    return None
 
 def DNF_solver(pexamples, nexamples) :
     s = 1
@@ -223,31 +223,38 @@ def DNF_solver(pexamples, nexamples) :
     return None
 
 def trans(x) :
-    if type(x) == list :
+    if type(x) == str :
+        return x
+    elif type(x) == list :
         if x[0] == 'shl' :
             if x[2] == 0 :
                 return trans(x[1])
             else :
                 x[2] -= 1
-                return ['shl1',trans(x)]
+                ret = []
+                ret.append('shl1')
+                ret.append(trans(x))
+                return ret
         elif x[0] == 'shr' :
+            ret = []
             if x[2] >= 16 :
                 x[2] -= 16
-                return ['shr16', trans(x)]
+                ret.append('shr16')
             elif x[2] >= 4 :
                 x[2] -= 4
-                return ['shr4', trans(x)]
+                ret.append('shr16')
             elif x[2] >= 1 :
                 x[2] -= 1
-                return ['shr1', trans(x)]
+                ret.append('shr16')
             else :
                 return trans(x[1])
+            ret.append(trans(x))
+            return ret
         else :
-            for i in range(1, len(x)) :
-                x[i] = trans(x[i])
-            return x
-    elif type(x) == str :
-        return x
+            ret = []
+            for i in range(0, len(x)) :
+                ret.append(trans(x[i]))
+            return ret
     else :
         return (['BitVec',('Int',64)],x)
 
@@ -284,12 +291,12 @@ def work(checker, Constraints) :
         nexample = []
         tempbv = terms[i]
         for c in Constraints :
-            if calc_bv(tempbv,c[1][1][1][1]) != c[1][2][1] :
+            if calc_bv(tempbv,c[1][1][1][1]) & 0xffffffffffffffff != c[1][2][1] :
                 nexample.append(c)
             else :
                 flag = True
                 for j in range(i+1, n-1) :
-                    if calc_bv(terms[j],c[1][1][1][1]) == c[1][2][1] :
+                    if calc_bv(terms[j],c[1][1][1][1]) & 0xffffffffffffffff == c[1][2][1] :
                         flag = False
                 if flag :
                     pexample.append(c)
@@ -301,4 +308,5 @@ def work(checker, Constraints) :
         n = n - 1
         res = ['if0', conditions[n], terms[n], res]
     # print(Constraints)
+    # print(res)
     return trans(res)
