@@ -214,7 +214,7 @@ def DNF_solver(pexamples, nexamples) :
     s = 1
     k = 1
     visit = set()
-    while s < 8 :
+    while s < 6 :
         for kk in range(1, k+1) :
             for ss in range(1, s+1) :
                 if (kk,ss) in visit :
@@ -301,7 +301,7 @@ def DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s) :
     for c in bases :
         n = len(ret)
         for j in range(0, n) :
-            if len(ret[j][0]) >= 8 * s :
+            if len(ret[j][0]) >= 4 * s :
                 continue
             temp = (calc_bv(c, x) & ret[j][1]) & 0xffffffffffffffff
             if count_ones(temp) < count_ones(ptarget) // k :
@@ -354,7 +354,7 @@ def DNF_forterm(constraint) :
     s = 1
     k = 2
     visit = set()
-    while s < 8 :
+    while s < 6 :
         for kk in range(1, k+1) :
             for ss in range(1, s+1) :
                 if (kk,ss) in visit :
@@ -384,7 +384,7 @@ def work(checker, Constraints) :
     bvs[1].append(1)
     bvs[1].append('x')
     prevterms = []
-    for i in range(2,8) :
+    for i in range(2,6) :
         enumerate_bv(i)
         # print(i,len(bvs[i]))
     for constraint in Constraints :
