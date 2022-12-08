@@ -230,25 +230,31 @@ def trans(x) :
             if x[2] == 0 :
                 return trans(x[1])
             else :
-                x[2] -= 1
+                temp = []
+                temp.append('shl')
+                temp.append(x[1])
+                temp.append(x[2]-1)
                 ret = []
                 ret.append('shl1')
-                ret.append(trans(x))
+                ret.append(trans(temp))
                 return ret
         elif x[0] == 'shr' :
             ret = []
+            temp = []
+            temp.append('shr')
+            temp.append(x[1])
             if x[2] >= 16 :
-                x[2] -= 16
+                temp.append(x[2]-16)
                 ret.append('shr16')
             elif x[2] >= 4 :
-                x[2] -= 4
-                ret.append('shr16')
+                temp.append(x[2]-4)
+                ret.append('shr4')
             elif x[2] >= 1 :
-                x[2] -= 1
-                ret.append('shr16')
+                temp.append(x[2]-1)
+                ret.append('shr1')
             else :
                 return trans(x[1])
-            ret.append(trans(x))
+            ret.append(trans(temp))
             return ret
         else :
             ret = []
@@ -308,5 +314,5 @@ def work(checker, Constraints) :
         n = n - 1
         res = ['if0', conditions[n], terms[n], res]
     # print(Constraints)
-    # print(res)
+    print(res)
     return trans(res)
