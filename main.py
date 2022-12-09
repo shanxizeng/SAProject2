@@ -7,6 +7,7 @@ import examples
 import listTrie
 import BVsolver
 import bv
+from random import sample
 
 prevexamples = examples.examples()
 
@@ -110,12 +111,15 @@ if __name__ == '__main__':
         Productions[NTName] = NonTerm[2]
     # print(Productions)
     if listTrie.isLIA == 0 :
+        
+        # temp = BVsolver.work(checker, sample(Constraints,k=len(Constraints)*9//10))
         temp = BVsolver.work(checker, Constraints)
         # print(temp)
         FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True) 
         CurrStr = translator.toString(temp)
         Str = FuncDefineStr[:-1]+' '+ CurrStr+FuncDefineStr[-1] 
         print(Str)
+        # print(checker.check(Str))
         exit()
     useBottomUp = 1
     if useBottomUp :

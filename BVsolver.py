@@ -159,21 +159,29 @@ def get_conditions(s) :
 #         res.append(i)
 #     return res
 
-def simply(clause, nexamples) :
+def simply(clause, nexamples, s) :
     ret = []
     temp = []
     for x in nexamples :
         temp.append(x)
-    for c in clause :
+    while len(temp) > 0 :
+        ans = ([], 0)
         t = []
-        # print(c,len(temp))
+        for c in clause :
+            # print(c,len(temp))
+            count = 0
+            for x in temp :
+                if (calc_bv(c, x[1][1][1][1]) & 1) == 0:
+                    count += 1
+            if count > ans[1] :
+                ans = (c, count)
         for x in temp :
-            if calc_bv(c, x[1][1][1][1]) & 1 :
+            if calc_bv(ans[0], x[1][1][1][1]) & 1 :
                 t.append(x)
-        if len(t) == len(temp) :
-            continue
-        ret.append(c)
         temp = t
+        ret.append(ans[0])
+    # if len(ret) > s :
+    #     return None
     return ret
 
 def get_candidate_clause(conditions, pexamples, nexamples, k, s) :
@@ -211,7 +219,9 @@ def get_candidate_clause(conditions, pexamples, nexamples, k, s) :
                 bj = False
                 break
         if bj :
-            ans.append(simply(i[0],nexamples))
+            temp = simply(i[0],nexamples,s)
+            if temp != None :
+                ans.append(temp)
     return ans
 
 def DNF_search(conditions, pexamples, nexamples, k, s) :
@@ -431,7 +441,6 @@ def work(checker, Constraints) :
     # xv = 4206553026002610923
     # print(calc_bv(test,xv))
     # return
-
     bvs.append([])
     bvs.append([])
     bvs[1].append(0)
@@ -478,6 +487,7 @@ def work(checker, Constraints) :
     # return
     terms = term_solver(Constraints)
     # print(terms)
+    # print(len(terms))
     # terms.reverse()
     n = len(terms)
     conditions = []
@@ -497,6 +507,7 @@ def work(checker, Constraints) :
                     pexample.append(c)
         cond = DNF_solver(pexample, nexample)
         conditions.append(['bvand',cond,1])
+        # print(cond)
     # print(conditions)
     n = n - 1
     res = terms[n]
