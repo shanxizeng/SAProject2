@@ -122,9 +122,22 @@ def term_solver(Constraints) :
 
 def get_conditions(s) :
     res = []
-    for i in bvs[s] :
-        res.append(i)
+    res.append(0)
+    for i in range(0, 64) :
+        res.append(['shl','x',i])
+        res.append(['shr','x',i])
+        res.append(['shl',1,i])
+    n = len(res)
+    for i in range(0, n) :
+        res.append(['bvnot',res[i]])
+    # print(res)
     return res
+
+# def get_conditions(s) :
+#     res = []
+#     for i in bvs[s] :
+#         res.append(i)
+#     return res
 
 def simply(clause, nexamples) :
     ret = []
@@ -284,52 +297,52 @@ def DNFterm_simply(clause, x, ntarget, s) :
         return None
     if ntarget == 0 :
         return []
-    for c in clause :
-        t = ((~ calc_bv(c, x)) & 0xffffffffffffffff) & ntarget
+    for (c, v) in clause :
+        t = ((~ v) & 0xffffffffffffffff) & ntarget
         if count_ones(t) < count_ones(ntarget) // s :
             continue
         res = DNFterm_simply(clause, x, ntarget ^ t, s - 1)
         if res == None :
             continue
-        res.append(c)
+        res.append((c, v))
         return res
     return None
 
 def DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s) :
     # print(ptarget, ntarget)
     ret = [([],ptarget)]
-    for c in bases :
+    for (c, v) in bases :
         n = len(ret)
         for j in range(0, n) :
             # if len(ret[j][0]) >= 4 * s :
             #     continue
-            temp = (calc_bv(c, x) & ret[j][1]) & 0xffffffffffffffff
+            temp = (v & ret[j][1]) & 0xffffffffffffffff
             if count_ones(temp) < count_ones(ptarget) // k :
                 continue
             if temp == ret[j][1] :
-                ret[j][0].append(c)
+                ret[j][0].append((c, v))
             else :
                 t = ([],temp)
-                for z in ret[j][0] :
-                    t[0].append(z)
-                t[0].append(c)
+                for (z, zv) in ret[j][0] :
+                    t[0].append((z, zv))
+                t[0].append((c, v))
                 ret.append(t)
     # print(k,s,ret)
     ans = []
     for i in ret :
         temp = 0xffffffffffffffff
-        for c in i[0] :
-            temp = temp & calc_bv(c, x)
+        for (c, v) in i[0] :
+            temp = temp & v
         if temp & ntarget == 0 :
             t = DNFterm_simply(i[0],x,ntarget, s*2)
             if t == None :
                 continue
             res = []
-            for y in t :
+            for (y, yv) in t :
                 if res == [] :
-                    res = y
+                    res = (y, yv)
                 else :
-                    res = ['bvand', y, res]
+                    res = (['bvand', y, res[0]], res[1] & yv)
             ans.append(res)
     return ans
 
@@ -339,9 +352,11 @@ def DNFterm_search(bases, x, ptarget, ntarget, k, s) :
     if k == 0 :
         return None
     temp = DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s)
-    for c in temp :
-        assert (ntarget & calc_bv(c, x)) == 0
-        res = DNFterm_search(bases, x, (ptarget ^ calc_bv(c, x)) & 0xffffffffffffffff, ntarget, k - 1, s)
+    # print(k,s,temp, ptarget)
+    for (c, v) in temp :
+        assert (ntarget & v) == 0
+        res = DNFterm_search(bases, x, (ptarget ^ (v & ptarget)) & 0xffffffffffffffff, ntarget, k - 1, s)
+        # print(res, c, ptarget)
         if res != None :
             if res == [] :
                 return c
@@ -352,21 +367,22 @@ def DNFterm_search(bases, x, ptarget, ntarget, k, s) :
 def get_terms(s, xv) :
     res = []
     se = set()
-    for j in range(0, s) :
+    for j in range(0, s+1) :
         for i in bvs[j] :
             if type(i) == list :
                 if i[0] == 'bvand' or i[0] == 'bvor' :
                     continue
-            if calc_bv(i, xv) in se :
+            temp = calc_bv(i, xv)
+            if temp in se :
                 continue
-            se.add(calc_bv(i,xv))
-            res.append(i)
+            se.add(temp)
+            res.append((i,temp))
     return res
 
 def DNF_forterm(constraint) :
     res = []
     s = 1
-    k = 2
+    k = 1
     visit = set()
     while s < 6 :
         for kk in range(1, k+1) :
@@ -375,14 +391,15 @@ def DNF_forterm(constraint) :
                     continue
                 visit.add((kk,ss))
                 bases = get_terms(ss, constraint[1][1][1][1])
-                # print(kk,ss,bases)
+                # print(kk,ss, bases)
                 temp = DNFterm_search(bases, constraint[1][1][1][1], constraint[1][2][1], (~ constraint[1][2][1]) & 0xffffffffffffffff, kk, ss)
                 if temp != None :
                     if temp == [] :
                         return [0]
                     else :
                         return [temp]
-        k += 2
+        if s % 2 == 0 :
+            k += 1
         s += 1
     return None
 
@@ -400,7 +417,7 @@ def work(checker, Constraints) :
     prevterms = []
     for i in range(2,6) :
         enumerate_bv(i)
-        print(i,len(bvs[i]))
+        # print(i,len(bvs[i]))
     for constraint in Constraints :
         # temp = []
         # for i in range(1,8) :
@@ -434,7 +451,7 @@ def work(checker, Constraints) :
         assert calc_bv(temp[0],constraint[1][1][1][1]) == constraint[1][2][1]
         poss_bv[constraint[1][1][1][1]] = temp
         prevterms.append(temp)
-        print(temp)
+        # print(temp)
     # return
     terms = term_solver(Constraints)
     # print(terms)
