@@ -107,6 +107,26 @@ def term_search(Constrains, k, n, s) :
     return None
 
 def term_solver(Constraints) :
+    res = []
+    cover_set = set()
+    while len(cover_set) != len(Constraints) :
+        most_cover = (0, [])
+        for c in Constraints :
+            temp = poss_bv[c[1][1][1][1]][0]
+            count = 0
+            for j in Constraints :
+                if calc_bv(temp,j[1][1][1][1]) & 0xffffffffffffffff == j[1][2][1] :
+                    if j[1][1][1][1] in cover_set :
+                        continue
+                    count += 1
+            if count > most_cover[0] :
+                most_cover = (count, temp)
+        for c in Constraints :
+            if calc_bv(most_cover[1],c[1][1][1][1]) & 0xffffffffffffffff == c[1][2][1] :
+                if c[1][1][1][1] not in cover_set :
+                    cover_set.add(c[1][1][1][1])
+        res.append(most_cover[1])
+    return res
     s = 1
     n = 3
     k = 5
@@ -305,10 +325,13 @@ def DNFterm_simply(clause, x, ntarget, s) :
         if res == None :
             continue
         res.append((c, v))
+        # print(res)
         return res
     return None
 
 def DNFterm_candidate_clause(bases, x, ptarget, ntarget, k, s) :
+    if ntarget == 0 :
+        return [(['bvnot', 0], ptarget)]
     # print(ptarget, ntarget)
     ret = [([],ptarget)]
     for (c, v) in bases :
@@ -455,7 +478,7 @@ def work(checker, Constraints) :
     # return
     terms = term_solver(Constraints)
     # print(terms)
-    terms.reverse()
+    # terms.reverse()
     n = len(terms)
     conditions = []
     for i in range(0, n - 1) :
@@ -474,6 +497,7 @@ def work(checker, Constraints) :
                     pexample.append(c)
         cond = DNF_solver(pexample, nexample)
         conditions.append(['bvand',cond,1])
+    # print(conditions)
     n = n - 1
     res = terms[n]
     while n != 0 :
