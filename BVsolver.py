@@ -44,7 +44,7 @@ def calc_bv(bv, xvalue) :
         if bv[0] == 'shr' :
             res =  calc_bv(bv[1],xvalue) >> bv[2]
         if bv[0] == 'bvadd' :
-            res = calc_bv(bv[1],xvalue) & calc_bv(bv[2],xvalue)
+            res = calc_bv(bv[1],xvalue) + calc_bv(bv[2],xvalue)
         return res & 0xffffffffffffffff
     if bv == 'x' :
         return xvalue & 0xffffffffffffffff
@@ -112,15 +112,16 @@ def term_solver(Constraints) :
     while len(cover_set) != len(Constraints) :
         most_cover = (0, [])
         for c in Constraints :
-            temp = poss_bv[c[1][1][1][1]][0]
-            count = 0
-            for j in Constraints :
-                if calc_bv(temp,j[1][1][1][1]) & 0xffffffffffffffff == j[1][2][1] :
-                    if j[1][1][1][1] in cover_set :
-                        continue
-                    count += 1
-            if count > most_cover[0] :
-                most_cover = (count, temp)
+            for j in range(0, len(poss_bv[c[1][1][1][1]])) :
+                temp = poss_bv[c[1][1][1][1]][j]
+                count = 0
+                for j in Constraints :
+                    if calc_bv(temp,j[1][1][1][1]) & 0xffffffffffffffff == j[1][2][1] :
+                        if j[1][1][1][1] in cover_set :
+                            continue
+                        count += 1
+                if count > most_cover[0] :
+                    most_cover = (count, temp)
         for c in Constraints :
             if calc_bv(most_cover[1],c[1][1][1][1]) & 0xffffffffffffffff == c[1][2][1] :
                 if c[1][1][1][1] not in cover_set :
@@ -436,7 +437,7 @@ def DNF_forterm(constraint) :
         s += 1
     return None
 
-def work(checker, Constraints) :
+def work(Constraints) :
     # test = ['bvand','x',['bvand',['shr','x',15],['bvnot',1]]]
     # xv = 4206553026002610923
     # print(calc_bv(test,xv))
@@ -447,42 +448,42 @@ def work(checker, Constraints) :
     bvs[1].append(1)
     bvs[1].append('x')
     prevterms = []
-    for i in range(2,6) :
+    for i in range(2,8) :
         enumerate_bv(i)
         # print(i,len(bvs[i]))
     for constraint in Constraints :
-        # temp = []
-        # for i in range(1,8) :
-        #     for bv in bvs[i] :
-        #         if calc_bv(bv,constraint[1][1][1][1]) & 0xffffffffffffffff == constraint[1][2][1] :
-        #             # print('passed',bv)
-        #             temp.append(bv)
-        #             if len(temp) == 1 :
-        #                 break
-        #     if len(temp) == 1 :
-        #         break
-        # if len(temp) == 0 :
-        #     return 'failed'
-        # print('pass',constraint[1][1][1][1])
+        temp = []
+        for i in range(1,8) :
+            for bv in bvs[i] :
+                if calc_bv(bv,constraint[1][1][1][1]) & 0xffffffffffffffff == constraint[1][2][1] :
+                    # print('passed',bv)
+                    temp.append(bv)
+                    if len(temp) == 10 :
+                        break
+            if len(temp) == 10 :
+                break
+        if len(temp) == 0 :
+            return 'failed'
+        # print('pass',hex(constraint[1][1][1][1]),temp)
         flag = False
         # print(constraint,prevterms)
-        for cc in prevterms :
-            for c in cc :
-                if calc_bv(c, constraint[1][1][1][1]) & 0xffffffffffffffff == constraint[1][2][1] :
-                    # print(constraint[1][1][1][1],c)
-                    poss_bv[constraint[1][1][1][1]] = cc
-                    flag = True
-                    break
-            if flag :
-                break
-        if flag :
-            continue
-        temp = deep_copy(DNF_forterm(constraint))
-        if temp == None :
-            return 'failed'
-        assert calc_bv(temp[0],constraint[1][1][1][1]) == constraint[1][2][1]
+        # for cc in prevterms :
+        #     for c in cc :
+        #         if calc_bv(c, constraint[1][1][1][1]) & 0xffffffffffffffff == constraint[1][2][1] :
+        #             # print(constraint[1][1][1][1],c)
+        #             poss_bv[constraint[1][1][1][1]] = cc
+        #             flag = True
+        #             break
+        #     if flag :
+        #         break
+        # if flag :
+        #     continue
+        # temp = deep_copy(DNF_forterm(constraint))
+        # if temp == None :
+        #     return 'failed'
+        # assert calc_bv(temp[0],constraint[1][1][1][1]) == constraint[1][2][1]
         poss_bv[constraint[1][1][1][1]] = temp
-        prevterms.append(temp)
+        # prevterms.append(temp)
         # print(temp)
     # return
     terms = term_solver(Constraints)

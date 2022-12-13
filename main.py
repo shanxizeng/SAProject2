@@ -113,7 +113,7 @@ if __name__ == '__main__':
     if listTrie.isLIA == 0 :
         
         # temp = BVsolver.work(checker, sample(Constraints,k=len(Constraints)*9//10))
-        temp = BVsolver.work(checker, Constraints)
+        temp = BVsolver.work(Constraints)
         # print(temp)
         FuncDefineStr = translator.toString(FuncDefine,ForceBracket = True) 
         CurrStr = translator.toString(temp)
